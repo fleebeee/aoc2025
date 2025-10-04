@@ -1,6 +1,11 @@
 advent_of_code::solution!(%DAY_NUMBER%);
 
+fn parse_input(input: &str) -> Vec<&str> {
+    input.lines().collect()
+}
+
 pub fn part_one(input: &str) -> Option<u64> {
+    let input = parse_input(input);
     None
 }
 

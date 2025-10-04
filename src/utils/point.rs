@@ -4,25 +4,25 @@ use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Vector2D {
+pub struct Point {
     pub x: i32,
     pub y: i32,
 }
 
-pub const ORIGIN: Vector2D = Vector2D::new(0, 0);
-pub const UP: Vector2D = Vector2D::new(0, -1);
-pub const DOWN: Vector2D = Vector2D::new(0, 1);
-pub const LEFT: Vector2D = Vector2D::new(-1, 0);
-pub const RIGHT: Vector2D = Vector2D::new(1, 0);
-pub const ORTHOGONAL: [Vector2D; 4] = [UP, DOWN, LEFT, RIGHT];
-pub const NE: Vector2D = Vector2D::new(1, -1);
-pub const SE: Vector2D = Vector2D::new(1, 1);
-pub const SW: Vector2D = Vector2D::new(-1, 1);
-pub const NW: Vector2D = Vector2D::new(-1, -1);
+pub const ORIGIN: Point = Point::new(0, 0);
+pub const UP: Point = Point::new(0, -1);
+pub const DOWN: Point = Point::new(0, 1);
+pub const LEFT: Point = Point::new(-1, 0);
+pub const RIGHT: Point = Point::new(1, 0);
+pub const ORTHOGONAL: [Point; 4] = [UP, DOWN, LEFT, RIGHT];
+pub const NE: Point = Point::new(1, -1);
+pub const SE: Point = Point::new(1, 1);
+pub const SW: Point = Point::new(-1, 1);
+pub const NW: Point = Point::new(-1, -1);
 // Reading order
-pub const DIAGONAL: [Vector2D; 8] = [NW, UP, NE, LEFT, RIGHT, SW, DOWN, SE];
+pub const DIAGONAL: [Point; 8] = [NW, UP, NE, LEFT, RIGHT, SW, DOWN, SE];
 
-impl Vector2D {
+impl Point {
     #[inline]
     pub const fn new(x: i32, y: i32) -> Self {
         Self { x, y }
@@ -31,22 +31,22 @@ impl Vector2D {
     #[inline]
     #[must_use]
     pub fn clockwise(self) -> Self {
-        Vector2D::new(-self.y, self.x)
+        Point::new(-self.y, self.x)
     }
 
     #[inline]
     #[must_use]
     pub fn counter_clockwise(self) -> Self {
-        Vector2D::new(self.y, -self.x)
+        Point::new(self.y, -self.x)
     }
 
     #[inline]
     pub fn orthogonal_neighbors(self) -> Vec<Self> {
         vec![
-            Vector2D::new(self.x + 1, self.y),
-            Vector2D::new(self.x, self.y + 1),
-            Vector2D::new(self.x - 1, self.y),
-            Vector2D::new(self.x, self.y - 1),
+            Point::new(self.x + 1, self.y),
+            Point::new(self.x, self.y + 1),
+            Point::new(self.x - 1, self.y),
+            Point::new(self.x, self.y - 1),
         ]
     }
 
@@ -62,21 +62,21 @@ impl Vector2D {
 
     #[inline]
     pub fn signum(self, other: Self) -> Self {
-        Vector2D::new((self.x - other.x).signum(), (self.y - other.y).signum())
+        Point::new((self.x - other.x).signum(), (self.y - other.y).signum())
     }
 
     #[inline]
     pub fn wrap(self, size: &Self) -> Self {
-        Vector2D::new((self.x + size.x) % size.x, (self.y + size.y) % size.y)
+        Point::new((self.x + size.x) % size.x, (self.y + size.y) % size.y)
     }
 
     #[inline]
     pub fn clamp(self, min: Self, max: Self) -> Self {
-        Vector2D::new(self.x.clamp(min.x, max.x), self.y.clamp(min.y, max.y))
+        Point::new(self.x.clamp(min.x, max.x), self.y.clamp(min.y, max.y))
     }
 }
 
-impl Hash for Vector2D {
+impl Hash for Point {
     #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write_u32(self.x as u32);
@@ -84,16 +84,16 @@ impl Hash for Vector2D {
     }
 }
 
-impl Add for Vector2D {
+impl Add for Point {
     type Output = Self;
 
     #[inline]
     fn add(self, rhs: Self) -> Self {
-        Vector2D::new(self.x + rhs.x, self.y + rhs.y)
+        Point::new(self.x + rhs.x, self.y + rhs.y)
     }
 }
 
-impl AddAssign for Vector2D {
+impl AddAssign for Point {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
@@ -101,25 +101,25 @@ impl AddAssign for Vector2D {
     }
 }
 
-impl Mul<i32> for Vector2D {
+impl Mul<i32> for Point {
     type Output = Self;
 
     #[inline]
     fn mul(self, rhs: i32) -> Self {
-        Vector2D::new(self.x * rhs, self.y * rhs)
+        Point::new(self.x * rhs, self.y * rhs)
     }
 }
 
-impl Sub for Vector2D {
+impl Sub for Point {
     type Output = Self;
 
     #[inline]
     fn sub(self, rhs: Self) -> Self {
-        Vector2D::new(self.x - rhs.x, self.y - rhs.y)
+        Point::new(self.x - rhs.x, self.y - rhs.y)
     }
 }
 
-impl SubAssign for Vector2D {
+impl SubAssign for Point {
     #[inline]
     fn sub_assign(&mut self, rhs: Self) {
         self.x -= rhs.x;
@@ -127,13 +127,13 @@ impl SubAssign for Vector2D {
     }
 }
 
-impl fmt::Display for Vector2D {
+impl fmt::Display for Point {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "x: {}, y: {}", self.x, self.y)
     }
 }
 
-pub fn get_vector2d_vec_bounds(vecs: &[Vector2D]) -> (Vector2D, Vector2D) {
+pub fn get_point_vec_bounds(vecs: &[Point]) -> (Point, Point) {
     let mut x_min = i32::MAX;
     let mut x_max = i32::MIN;
     let mut y_min = i32::MAX;
@@ -146,11 +146,11 @@ pub fn get_vector2d_vec_bounds(vecs: &[Vector2D]) -> (Vector2D, Vector2D) {
         y_max = y_max.max(vec.y);
     }
 
-    (Vector2D::new(x_min, y_min), Vector2D::new(x_max, y_max))
+    (Point::new(x_min, y_min), Point::new(x_max, y_max))
 }
 
-pub fn print_vector2d_vec(vecs: &[Vector2D]) {
-    let (min, max) = get_vector2d_vec_bounds(vecs);
+pub fn print_point_vec(vecs: &[Point]) {
+    let (min, max) = get_point_vec_bounds(vecs);
 
     let w = (max.x - min.x) as usize + 1;
     let h = (max.y - min.y) as usize + 1;
@@ -176,7 +176,7 @@ pub fn print_vector2d_vec(vecs: &[Vector2D]) {
     println!();
 }
 
-pub fn print_vector2d_set(s: &HashSet<Vector2D>) {
-    let vecs: Vec<Vector2D> = s.iter().cloned().collect();
-    print_vector2d_vec(&vecs);
+pub fn print_point_set(s: &HashSet<Point>) {
+    let vecs: Vec<Point> = s.iter().cloned().collect();
+    print_point_vec(&vecs);
 }

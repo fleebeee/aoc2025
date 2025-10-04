@@ -3,15 +3,15 @@ use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Vector3D {
+pub struct Point3D {
     pub x: i32,
     pub y: i32,
     pub z: i32,
 }
 
-pub const ORIGIN: Vector3D = Vector3D::new(0, 0, 0);
+pub const ORIGIN: Point3D = Point3D::new(0, 0, 0);
 
-impl Vector3D {
+impl Point3D {
     #[inline]
     pub const fn new(x: i32, y: i32, z: i32) -> Self {
         Self { x, y, z }
@@ -20,12 +20,12 @@ impl Vector3D {
     #[inline]
     pub fn orthogonal_neighbors(self) -> Vec<Self> {
         vec![
-            Vector3D::new(self.x + 1, self.y, self.z),
-            Vector3D::new(self.x, self.y + 1, self.z),
-            Vector3D::new(self.x - 1, self.y, self.z),
-            Vector3D::new(self.x, self.y - 1, self.z),
-            Vector3D::new(self.x, self.y, self.z + 1),
-            Vector3D::new(self.x, self.y, self.z - 1),
+            Point3D::new(self.x + 1, self.y, self.z),
+            Point3D::new(self.x, self.y + 1, self.z),
+            Point3D::new(self.x - 1, self.y, self.z),
+            Point3D::new(self.x, self.y - 1, self.z),
+            Point3D::new(self.x, self.y, self.z + 1),
+            Point3D::new(self.x, self.y, self.z - 1),
         ]
     }
 
@@ -36,7 +36,7 @@ impl Vector3D {
 
     #[inline]
     pub fn signum(self, other: Self) -> Self {
-        Vector3D::new(
+        Point3D::new(
             (self.x - other.x).signum(),
             (self.y - other.y).signum(),
             (self.z - other.z).signum(),
@@ -44,7 +44,7 @@ impl Vector3D {
     }
 }
 
-impl Hash for Vector3D {
+impl Hash for Point3D {
     #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write_i32(self.x);
@@ -53,16 +53,16 @@ impl Hash for Vector3D {
     }
 }
 
-impl Add for Vector3D {
+impl Add for Point3D {
     type Output = Self;
 
     #[inline]
     fn add(self, rhs: Self) -> Self {
-        Vector3D::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+        Point3D::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
-impl AddAssign for Vector3D {
+impl AddAssign for Point3D {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
@@ -71,25 +71,25 @@ impl AddAssign for Vector3D {
     }
 }
 
-impl Mul<i32> for Vector3D {
+impl Mul<i32> for Point3D {
     type Output = Self;
 
     #[inline]
     fn mul(self, rhs: i32) -> Self {
-        Vector3D::new(self.x * rhs, self.y * rhs, self.z * rhs)
+        Point3D::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
 }
 
-impl Sub for Vector3D {
+impl Sub for Point3D {
     type Output = Self;
 
     #[inline]
     fn sub(self, rhs: Self) -> Self {
-        Vector3D::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
+        Point3D::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
 
-impl SubAssign for Vector3D {
+impl SubAssign for Point3D {
     #[inline]
     fn sub_assign(&mut self, rhs: Self) {
         self.x -= rhs.x;
@@ -98,13 +98,13 @@ impl SubAssign for Vector3D {
     }
 }
 
-pub fn print_vector3d_set(s: &HashSet<Vector3D>) {
+pub fn print_point3d_set(s: &HashSet<Point3D>) {
     let s: Vec<_> = s.iter().cloned().collect();
 
-    print_vector3d_vec(&s);
+    print_point3d_vec(&s);
 }
 
-pub fn get_vector3d_vec_bounds(vec: &[Vector3D]) -> (Vector3D, Vector3D) {
+pub fn get_point3d_vec_bounds(vec: &[Point3D]) -> (Point3D, Point3D) {
     let mut x_min = i32::MAX;
     let mut x_max = i32::MIN;
     let mut y_min = i32::MAX;
@@ -122,12 +122,12 @@ pub fn get_vector3d_vec_bounds(vec: &[Vector3D]) -> (Vector3D, Vector3D) {
     }
 
     (
-        Vector3D::new(x_min, y_min, z_min),
-        Vector3D::new(x_max, y_max, z_max),
+        Point3D::new(x_min, y_min, z_min),
+        Point3D::new(x_max, y_max, z_max),
     )
 }
 
-pub fn print_vector3d_vec(vecs: &[Vector3D]) {
+pub fn print_point3d_vec(vecs: &[Point3D]) {
     let mut x_min = i32::MAX;
     let mut x_max = i32::MIN;
     let mut y_min = i32::MAX;

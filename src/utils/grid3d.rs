@@ -1,4 +1,4 @@
-use crate::utils::vector3d::Vector3D;
+use crate::utils::point3d::Point3D;
 use std::ops::{Index, IndexMut};
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -32,7 +32,7 @@ impl Grid3D<bool> {
             println!("z = {}", z);
             for y in 0..h {
                 for x in 0..w {
-                    let c = if self[Vector3D::new(x as i32, y as i32, z as i32)] {
+                    let c = if self[Point3D::new(x as i32, y as i32, z as i32)] {
                         '#'
                     } else {
                         '.'
@@ -50,7 +50,7 @@ impl Grid3D<bool> {
             println!("y = {}", y);
             for z in 0..d {
                 for x in 0..w {
-                    let c = if self[Vector3D::new(x as i32, y as i32, z as i32)] {
+                    let c = if self[Point3D::new(x as i32, y as i32, z as i32)] {
                         '#'
                     } else {
                         '.'
@@ -68,7 +68,7 @@ impl Grid3D<bool> {
             println!("x = {}", x);
             for z in 0..d {
                 for y in 0..h {
-                    let c = if self[Vector3D::new(x as i32, y as i32, z as i32)] {
+                    let c = if self[Point3D::new(x as i32, y as i32, z as i32)] {
                         '#'
                     } else {
                         '.'
@@ -84,7 +84,7 @@ impl Grid3D<bool> {
 
 impl<T> Grid3D<T> {
     #[inline]
-    pub fn orthogonal_neighbors(&self, point: &Vector3D) -> Vec<Vector3D> {
+    pub fn orthogonal_neighbors(&self, point: &Point3D) -> Vec<Point3D> {
         point
             .orthogonal_neighbors()
             .into_iter()
@@ -100,19 +100,19 @@ impl<T> Grid3D<T> {
     }
 }
 
-impl<T> Index<Vector3D> for Grid3D<T> {
+impl<T> Index<Point3D> for Grid3D<T> {
     type Output = T;
 
     #[inline]
-    fn index(&self, index: Vector3D) -> &Self::Output {
+    fn index(&self, index: Point3D) -> &Self::Output {
         let idx = (index.x + self.width * index.y + self.width * self.height * index.z) as usize;
         &self.bytes[idx]
     }
 }
 
-impl<T> IndexMut<Vector3D> for Grid3D<T> {
+impl<T> IndexMut<Point3D> for Grid3D<T> {
     #[inline]
-    fn index_mut(&mut self, index: Vector3D) -> &mut Self::Output {
+    fn index_mut(&mut self, index: Point3D) -> &mut Self::Output {
         let idx = (index.x + self.width * index.y + self.width * self.height * index.z) as usize;
         &mut self.bytes[idx]
     }

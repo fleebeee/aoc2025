@@ -3,14 +3,14 @@ use std::ops::{Index, IndexMut};
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Grid3D<T> {
-    pub width: i32,
-    pub height: i32,
-    pub depth: i32,
+    pub width: i64,
+    pub height: i64,
+    pub depth: i64,
     pub bytes: Vec<T>,
 }
 
 impl Grid3D<bool> {
-    pub fn new(width: i32, height: i32, depth: i32) -> Self {
+    pub fn new(width: i64, height: i64, depth: i64) -> Self {
         let bytes = vec![false; (width * height * depth) as usize];
 
         Grid3D {
@@ -32,7 +32,7 @@ impl Grid3D<bool> {
             println!("z = {}", z);
             for y in 0..h {
                 for x in 0..w {
-                    let c = if self[Point3D::new(x as i32, y as i32, z as i32)] {
+                    let c = if self[Point3D::new(x as i64, y as i64, z as i64)] {
                         '#'
                     } else {
                         '.'
@@ -50,7 +50,7 @@ impl Grid3D<bool> {
             println!("y = {}", y);
             for z in 0..d {
                 for x in 0..w {
-                    let c = if self[Point3D::new(x as i32, y as i32, z as i32)] {
+                    let c = if self[Point3D::new(x as i64, y as i64, z as i64)] {
                         '#'
                     } else {
                         '.'
@@ -68,7 +68,7 @@ impl Grid3D<bool> {
             println!("x = {}", x);
             for z in 0..d {
                 for y in 0..h {
-                    let c = if self[Point3D::new(x as i32, y as i32, z as i32)] {
+                    let c = if self[Point3D::new(x as i64, y as i64, z as i64)] {
                         '#'
                     } else {
                         '.'

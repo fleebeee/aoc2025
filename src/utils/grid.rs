@@ -3,8 +3,8 @@ use std::ops::{Index, IndexMut};
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Grid<T> {
-    pub width: i32,
-    pub height: i32,
+    pub width: i64,
+    pub height: i64,
     pub bytes: Vec<T>,
 }
 
@@ -12,8 +12,8 @@ impl Grid<u8> {
     #[inline]
     pub fn parse(input: &str) -> Self {
         let raw: Vec<_> = input.lines().map(str::as_bytes).collect();
-        let width = raw[0].len() as i32;
-        let height = raw.len() as i32;
+        let width = raw[0].len() as i64;
+        let height = raw.len() as i64;
         let mut bytes = Vec::with_capacity((width * height) as usize);
         raw.iter().for_each(|slice| bytes.extend_from_slice(slice));
         Grid {
@@ -43,7 +43,7 @@ impl Grid<u8> {
 }
 
 impl<T: Clone> Grid<T> {
-    pub fn new(width: i32, height: i32, seed: T) -> Self {
+    pub fn new(width: i64, height: i64, seed: T) -> Self {
         let bytes = vec![seed; (width * height) as usize];
 
         Grid {

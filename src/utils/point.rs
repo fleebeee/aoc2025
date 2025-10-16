@@ -5,8 +5,8 @@ use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Point {
-    pub x: i32,
-    pub y: i32,
+    pub x: i64,
+    pub y: i64,
 }
 
 pub const ORIGIN: Point = Point::new(0, 0);
@@ -24,7 +24,7 @@ pub const DIAGONAL: [Point; 8] = [NW, UP, NE, LEFT, RIGHT, SW, DOWN, SE];
 
 impl Point {
     #[inline]
-    pub const fn new(x: i32, y: i32) -> Self {
+    pub const fn new(x: i64, y: i64) -> Self {
         Self { x, y }
     }
 
@@ -51,7 +51,7 @@ impl Point {
     }
 
     #[inline]
-    pub fn manhattan(self, other: Self) -> i32 {
+    pub fn manhattan(self, other: Self) -> i64 {
         (self.x - other.x).abs() + (self.y - other.y).abs()
     }
 
@@ -66,7 +66,7 @@ impl Point {
     }
 
     #[inline]
-    pub fn wrap(self, size: &Self) -> Self {
+    pub fn wrap(self, size: Self) -> Self {
         Point::new((self.x + size.x) % size.x, (self.y + size.y) % size.y)
     }
 
@@ -101,11 +101,11 @@ impl AddAssign for Point {
     }
 }
 
-impl Mul<i32> for Point {
+impl Mul<i64> for Point {
     type Output = Self;
 
     #[inline]
-    fn mul(self, rhs: i32) -> Self {
+    fn mul(self, rhs: i64) -> Self {
         Point::new(self.x * rhs, self.y * rhs)
     }
 }
@@ -134,10 +134,10 @@ impl fmt::Display for Point {
 }
 
 pub fn get_point_vec_bounds(vecs: &[Point]) -> (Point, Point) {
-    let mut x_min = i32::MAX;
-    let mut x_max = i32::MIN;
-    let mut y_min = i32::MAX;
-    let mut y_max = i32::MIN;
+    let mut x_min = i64::MAX;
+    let mut x_max = i64::MIN;
+    let mut y_min = i64::MAX;
+    let mut y_max = i64::MIN;
 
     for vec in vecs.iter() {
         x_min = x_min.min(vec.x);

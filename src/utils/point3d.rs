@@ -4,16 +4,16 @@ use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Point3D {
-    pub x: i32,
-    pub y: i32,
-    pub z: i32,
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
 }
 
 pub const ORIGIN: Point3D = Point3D::new(0, 0, 0);
 
 impl Point3D {
     #[inline]
-    pub const fn new(x: i32, y: i32, z: i32) -> Self {
+    pub const fn new(x: i64, y: i64, z: i64) -> Self {
         Self { x, y, z }
     }
 
@@ -30,7 +30,7 @@ impl Point3D {
     }
 
     #[inline]
-    pub fn manhattan(self, other: &Self) -> i32 {
+    pub fn manhattan(self, other: Self) -> i64 {
         (self.x - other.x).abs() + (self.y - other.y).abs() + (self.z - other.z).abs()
     }
 
@@ -47,9 +47,9 @@ impl Point3D {
 impl Hash for Point3D {
     #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write_i32(self.x);
-        state.write_i32(self.y);
-        state.write_i32(self.z);
+        state.write_i64(self.x);
+        state.write_i64(self.y);
+        state.write_i64(self.z);
     }
 }
 
@@ -71,11 +71,11 @@ impl AddAssign for Point3D {
     }
 }
 
-impl Mul<i32> for Point3D {
+impl Mul<i64> for Point3D {
     type Output = Self;
 
     #[inline]
-    fn mul(self, rhs: i32) -> Self {
+    fn mul(self, rhs: i64) -> Self {
         Point3D::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
 }
@@ -105,12 +105,12 @@ pub fn print_point3d_set(s: &HashSet<Point3D>) {
 }
 
 pub fn get_point3d_vec_bounds(vec: &[Point3D]) -> (Point3D, Point3D) {
-    let mut x_min = i32::MAX;
-    let mut x_max = i32::MIN;
-    let mut y_min = i32::MAX;
-    let mut y_max = i32::MIN;
-    let mut z_min = i32::MAX;
-    let mut z_max = i32::MIN;
+    let mut x_min = i64::MAX;
+    let mut x_max = i64::MIN;
+    let mut y_min = i64::MAX;
+    let mut y_max = i64::MIN;
+    let mut z_min = i64::MAX;
+    let mut z_max = i64::MIN;
 
     for v in vec {
         x_min = x_min.min(v.x);
@@ -128,12 +128,12 @@ pub fn get_point3d_vec_bounds(vec: &[Point3D]) -> (Point3D, Point3D) {
 }
 
 pub fn print_point3d_vec(vecs: &[Point3D]) {
-    let mut x_min = i32::MAX;
-    let mut x_max = i32::MIN;
-    let mut y_min = i32::MAX;
-    let mut y_max = i32::MIN;
-    let mut z_min = i32::MAX;
-    let mut z_max = i32::MIN;
+    let mut x_min = i64::MAX;
+    let mut x_max = i64::MIN;
+    let mut y_min = i64::MAX;
+    let mut y_max = i64::MIN;
+    let mut z_min = i64::MAX;
+    let mut z_max = i64::MIN;
 
     for vec in vecs.iter() {
         x_min = x_min.min(vec.x);

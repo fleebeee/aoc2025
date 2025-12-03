@@ -8,7 +8,7 @@ fn parse_input(input: &str) -> Vec<Vec<u8>> {
 }
 
 fn calculate_joltage<const DIGIT_COUNT: usize>(bank: &[u8]) -> u64 {
-    // For each digit, try to swap with a bigger digit to its left
+    // For each digit, take the biggest "legal" battery to its left
     let mut digits = Vec::with_capacity(DIGIT_COUNT);
     let mut left = 0;
     let mut right = bank.len() - (DIGIT_COUNT - 1); // Include current digit

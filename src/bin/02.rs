@@ -1,5 +1,7 @@
 use std::ops::RangeInclusive;
 
+use hashbrown::HashSet;
+
 advent_of_code::solution!(2);
 
 fn parse_input(input: &str) -> Vec<RangeInclusive<u64>> {
@@ -70,43 +72,48 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(total)
 }
 
-fn is_invalid_part_two(n: u64) -> bool {
-    let s = n.to_string();
-    let b = s.as_bytes();
-    let pattern_size_max = b.len() / 2;
-
-    'size: for pattern_size in 1..=pattern_size_max {
-        // Only continue checking if ID is divisible by pattern size
-        if b.len() % pattern_size != 0 {
-            continue;
-        }
-
-        let pattern_count = b.len() / pattern_size;
-
-        for i in 0..pattern_size {
-            for j in 0..pattern_count {
-                if b[j * pattern_size + i] != b[i] {
-                    // Pattern is disrupted, check next one
-                    continue 'size;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    false
-}
-
 pub fn part_two(input: &str) -> Option<u64> {
     let ranges = parse_input(input);
 
-    let invalid_sum = ranges
-        .into_iter()
-        .map(|range| range.filter(|&n| is_invalid_part_two(n)).sum::<u64>())
-        .sum();
+    let mut ids = HashSet::new();
 
-    Some(invalid_sum)
+    for range in ranges {
+        let start = *range.start();
+        let end = *range.end();
+        let min_digits = count_digits(start);
+        let max_digits = count_digits(end);
+
+        for len in min_digits..=max_digits {
+            for pattern_len in 1..=len / 2 {
+                if len % pattern_len != 0 {
+                    continue;
+                }
+
+                // We need a new formula for the multiplier
+                // 13 * 10101 = 131313
+
+                let times = len / pattern_len;
+                let multiplier =
+                    (0..times).fold(0, |acc, x| acc + 10u64.pow((x * pattern_len) as u32));
+
+                let seed_min =
+                    (start.div_ceil(multiplier)).max(10u64.pow((pattern_len - 1) as u32));
+                let seed_max = (end / multiplier).min(10u64.pow(pattern_len as u32) - 1);
+
+                if seed_min > seed_max {
+                    continue;
+                }
+
+                for seed in seed_min..=seed_max {
+                    ids.insert(seed * multiplier);
+                }
+            }
+        }
+    }
+
+    let total = ids.iter().sum::<u64>();
+
+    Some(total)
 }
 
 #[cfg(test)]

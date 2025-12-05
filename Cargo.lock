@@ -25,6 +25,7 @@ dependencies = [
  "dhat",
  "hashbrown",
  "pico-args",
+ "range-set",
  "tinyjson",
 ]
 
@@ -322,6 +323,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5267fca4496028628a95160fc423a33e8b2e6af8a5302579e322e4b520293cae"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "range-set"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d49e572143755710377fda7cbd3f46e8523b912339759636ab2770abb16c4c3"
+dependencies = [
+ "num-traits",
+ "smallvec",
 ]
 
 [[package]]

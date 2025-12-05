@@ -6,6 +6,7 @@ pub struct Range<T> {
 }
 
 impl<T> Range<T> {
+    /// Create a new exclusive range
     pub fn new(start: T, end: T) -> Self {
         Range { start, end }
     }

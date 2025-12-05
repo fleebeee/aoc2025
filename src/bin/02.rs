@@ -90,11 +90,14 @@ pub fn part_two(input: &str) -> Option<u64> {
                 }
 
                 // We need a new formula for the multiplier
-                // 13 * 10101 = 131313
+                // e.g. 13 * 10101 = 131313
+
+                // n = pattern_len, r = times
+                // (10^(n*r) - 1) / (10^n - 1)
 
                 let times = len / pattern_len;
-                let multiplier =
-                    (0..times).fold(0, |acc, x| acc + 10u64.pow((x * pattern_len) as u32));
+                let multiplier = (10u64.pow((pattern_len * times) as u32) - 1)
+                    / (10u64.pow(pattern_len as u32) - 1);
 
                 let seed_min =
                     (start.div_ceil(multiplier)).max(10u64.pow((pattern_len - 1) as u32));

@@ -18,7 +18,7 @@ fn parse_input(input: &str) -> Vec<Point3D> {
 }
 
 fn calculate_pairs(junctions: &[Point3D]) -> Vec<Pair> {
-    let mut pairs = vec![];
+    let mut pairs = Vec::with_capacity(junctions.len().pow(2));
 
     for i in 0..junctions.len() - 1 {
         for j in i + 1..junctions.len() {

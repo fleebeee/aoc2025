@@ -1,5 +1,4 @@
 use advent_of_code::utils::{parse::parse_unsigned, point3d::Point3D};
-use hashbrown::HashSet;
 
 advent_of_code::solution!(8);
 
@@ -42,46 +41,59 @@ fn calculate_pairs(junctions: &[Point3D]) -> Vec<Pair> {
     pairs
 }
 
+struct Circuit {
+    parent: usize,
+    size: usize,
+}
+
+fn find(circuits: &mut [Circuit], id: usize) -> usize {
+    if circuits[id].parent != id {
+        find(circuits, circuits[id].parent)
+    } else {
+        id
+    }
+}
+
+fn union(circuits: &mut [Circuit], id_a: usize, id_b: usize) -> usize {
+    let a = find(circuits, id_a);
+    let b = find(circuits, id_b);
+
+    if a != b {
+        circuits[b].parent = a;
+        circuits[a].size += circuits[b].size;
+    }
+
+    // Return resulting size for part 2
+    circuits[a].size
+}
+
 pub fn part_one(input: &str) -> Option<u64> {
     let junctions = parse_input(input);
     let pairs = calculate_pairs(&junctions);
 
-    let mut unions = vec![];
-    for i in 0..junctions.len() {
-        let mut set = HashSet::new();
-        set.insert(i);
-        unions.push(set);
-    }
+    let mut circuits: Vec<Circuit> = (0..junctions.len())
+        .map(|i| Circuit { parent: i, size: 1 })
+        .collect();
 
     for pair in pairs.iter().take(1000) {
-        let union_a_idx = unions
-            .iter()
-            .position(|u: &HashSet<usize>| u.contains(&pair.a));
-        let union_b_idx = unions
-            .iter()
-            .position(|u: &HashSet<usize>| u.contains(&pair.b));
-
-        match (union_a_idx, union_b_idx) {
-            (Some(union_a_idx), Some(union_b_idx)) => {
-                if union_a_idx != union_b_idx {
-                    unions[union_a_idx] = unions[union_a_idx]
-                        .union(&unions[union_b_idx])
-                        .copied()
-                        .collect();
-                    unions.remove(union_b_idx);
-                }
-            }
-            _ => unreachable!(),
-        }
+        union(&mut circuits, pair.a, pair.b);
     }
 
-    unions.sort_unstable_by_key(|u| u.len());
-    let result = unions
+    let mut roots: Vec<usize> = circuits
         .iter()
-        .rev()
-        .take(3)
-        .map(|u| u.len())
-        .product::<usize>();
+        .enumerate()
+        .filter_map(|(i, circuit)| {
+            if circuit.parent == i {
+                Some(circuit.size)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    roots.sort_unstable();
+
+    let result = roots.iter().rev().take(3).product::<usize>();
 
     Some(result as u64)
 }
@@ -90,37 +102,16 @@ pub fn part_two(input: &str) -> Option<u64> {
     let junctions = parse_input(input);
     let pairs = calculate_pairs(&junctions);
 
-    let mut unions = vec![];
-    for i in 0..junctions.len() {
-        let mut set = HashSet::new();
-        set.insert(i);
-        unions.push(set);
-    }
+    let mut circuits: Vec<Circuit> = (0..junctions.len())
+        .map(|i| Circuit { parent: i, size: 1 })
+        .collect();
 
-    for pair in pairs {
-        let union_a_idx = unions
-            .iter()
-            .position(|u: &HashSet<usize>| u.contains(&pair.a));
-        let union_b_idx = unions
-            .iter()
-            .position(|u: &HashSet<usize>| u.contains(&pair.b));
+    for pair in &pairs {
+        let size = union(&mut circuits, pair.a, pair.b);
 
-        match (union_a_idx, union_b_idx) {
-            (Some(union_a_idx), Some(union_b_idx)) => {
-                if union_a_idx != union_b_idx {
-                    unions[union_a_idx] = unions[union_a_idx]
-                        .union(&unions[union_b_idx])
-                        .copied()
-                        .collect();
-                    unions.remove(union_b_idx);
-
-                    if unions.len() == 1 {
-                        let result = junctions[pair.a].x * junctions[pair.b].x;
-                        return Some(result as u64);
-                    }
-                }
-            }
-            _ => unreachable!(),
+        if size == junctions.len() {
+            let result = junctions[pair.a].x * junctions[pair.b].x;
+            return Some(result as u64);
         }
     }
 

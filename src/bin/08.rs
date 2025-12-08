@@ -7,7 +7,7 @@ advent_of_code::solution!(8);
 struct Pair {
     a: usize,
     b: usize,
-    distance: f64,
+    distance: i64,
 }
 
 fn parse_input(input: &str) -> Vec<Point3D> {
@@ -22,7 +22,13 @@ fn calculate_pairs(junctions: &[Point3D]) -> Vec<Pair> {
 
     for i in 0..junctions.len() - 1 {
         for j in i + 1..junctions.len() {
-            let distance = junctions[i].distance(junctions[j]);
+            // Save some time by not taking the square root
+            let distance = {
+                let a = junctions[i];
+                let b = junctions[j];
+                (a.x - b.x).pow(2) + (a.y - b.y).pow(2) + (a.z - b.z).pow(2)
+            };
+
             pairs.push(Pair {
                 a: i,
                 b: j,
@@ -31,7 +37,7 @@ fn calculate_pairs(junctions: &[Point3D]) -> Vec<Pair> {
         }
     }
 
-    pairs.sort_unstable_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap());
+    pairs.sort_unstable_by_key(|a| a.distance);
 
     pairs
 }

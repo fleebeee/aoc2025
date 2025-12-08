@@ -35,6 +35,12 @@ impl Point3D {
     }
 
     #[inline]
+    pub fn distance(self, other: Self) -> f64 {
+        (((self.x - other.x).pow(2) + (self.y - other.y).pow(2) + (self.z - other.z).pow(2)) as f64)
+            .sqrt()
+    }
+
+    #[inline]
     pub fn signum(self, other: Self) -> Self {
         Point3D::new(
             (self.x - other.x).signum(),

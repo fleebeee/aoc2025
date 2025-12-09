@@ -58,7 +58,7 @@ impl<T: Clone> Grid<T> {
     }
 
     #[inline]
-    pub fn orthogonal_neighbors(&self, point: &Point) -> Vec<Point> {
+    pub fn orthogonal_neighbors(&self, point: Point) -> Vec<Point> {
         point
             .orthogonal_neighbors()
             .into_iter()

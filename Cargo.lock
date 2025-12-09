@@ -26,6 +26,7 @@ dependencies = [
  "hashbrown",
  "pico-args",
  "range-set",
+ "rangemap",
  "tinyjson",
 ]
 
@@ -334,6 +335,12 @@ dependencies = [
  "num-traits",
  "smallvec",
 ]
+
+[[package]]
+name = "rangemap"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acbbbbea733ec66275512d0b9694f34102e7d5406fdbe2ad8d21b28dce92887c"
 
 [[package]]
 name = "redox_syscall"

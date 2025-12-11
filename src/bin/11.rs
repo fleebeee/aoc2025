@@ -2,29 +2,65 @@ use hashbrown::HashMap;
 
 advent_of_code::solution!(11);
 
-fn parse_input(input: &str) -> HashMap<String, Vec<String>> {
-    let mut outputs_map = HashMap::new();
-
-    input.lines().for_each(|line| {
-        let (name, outputs) = line.split_once(": ").unwrap();
-        let outputs: Vec<_> = outputs.split(" ").map(|s| s.to_string()).collect();
-
-        outputs_map.insert(name.to_string(), outputs);
-    });
-
-    outputs_map
+struct ParsedInput {
+    outputs: Vec<Vec<usize>>,
+    you: Option<usize>,
+    svr: Option<usize>,
+    dac: Option<usize>,
+    fft: Option<usize>,
+    out: Option<usize>,
 }
 
-fn count(outputs_map: &HashMap<String, Vec<String>>, current: String) -> u64 {
+fn parse_input(input: &str) -> ParsedInput {
+    // Instead of using a hashmap with strings, we can use
+    // an array where the indices correspond to device names
+    // in the order they were parsed in
+
+    // First make a regular String -> Vec<String> hashmap,
+    // then translate it to an array interface that works
+    // as usize -> Vec<usize>
+
+    let mut outputs: HashMap<String, Vec<String>> = HashMap::new();
+    let mut translations = HashMap::new();
+
+    input.lines().enumerate().for_each(|(i, line)| {
+        let (name, outs) = line.split_once(": ").unwrap();
+        let outs: Vec<_> = outs.split(" ").map(|s| s.to_string()).collect();
+
+        translations.insert(name, i);
+        outputs.insert(name.to_string(), outs);
+    });
+
+    translations.insert("out", translations.len());
+
+    let mut translated: Vec<Vec<usize>> = vec![vec![]; translations.len()];
+
+    for (name, outs) in outputs {
+        let idx = translations[name.as_str()];
+        translated[idx] = outs.iter().map(|v| translations[v.as_str()]).collect();
+    }
+
+    // Supply indices for PoIs
+    ParsedInput {
+        outputs: translated,
+        you: translations.get("you").copied(),
+        svr: translations.get("svr").copied(),
+        dac: translations.get("dac").copied(),
+        fft: translations.get("fft").copied(),
+        out: translations.get("out").copied(),
+    }
+}
+
+fn count(outputs: &[Vec<usize>], current: usize, idx_out: usize) -> u64 {
     let mut sum = 0;
 
-    if current == "out" {
+    if current == idx_out {
         return 1;
     }
 
-    if let Some(outputs) = outputs_map.get(&current) {
-        for output in outputs {
-            sum += count(outputs_map, output.to_string());
+    if let Some(outs) = outputs.get(current) {
+        for out in outs {
+            sum += count(outputs, *out, idx_out);
         }
 
         sum
@@ -34,40 +70,43 @@ fn count(outputs_map: &HashMap<String, Vec<String>>, current: String) -> u64 {
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let output_map = parse_input(input);
+    let parsed = parse_input(input);
 
-    let result = count(&output_map, "you".to_string());
+    let result = count(&parsed.outputs, parsed.you?, parsed.out?);
 
     Some(result)
 }
 
 fn count2(
-    outputs_map: &HashMap<String, Vec<String>>,
-    visited_map: &mut HashMap<(String, u8), u64>,
-    current: String,
+    outputs: &Vec<Vec<usize>>,
+    memo: &mut HashMap<(usize, u8), u64>,
+    current: usize,
+    idx_dac: usize,
+    idx_fft: usize,
+    idx_out: usize,
     mut visited: u8,
 ) -> u64 {
-    if let Some(sum) = visited_map.get(&(current.clone(), visited)) {
+    if let Some(sum) = memo.get(&(current, visited)) {
         return *sum;
     }
 
-    match current.as_str() {
-        "out" => {
+    match current {
+        x if x == idx_out => {
             return if visited == 0b11 { 1 } else { 0 };
         }
-        "dac" => visited |= 0b01,
-        "fft" => visited |= 0b10,
+        x if x == idx_dac => visited |= 0b01,
+        x if x == idx_fft => visited |= 0b10,
         _ => (),
     };
 
     let mut sum = 0;
 
-    if let Some(outputs) = outputs_map.get(&current) {
-        for output in outputs {
-            sum += count2(outputs_map, visited_map, output.to_string(), visited);
+    if let Some(outs) = outputs.get(current) {
+        for output in outs {
+            sum += count2(outputs, memo, *output, idx_dac, idx_fft, idx_out, visited);
         }
 
-        visited_map.insert((current, visited), sum);
+        memo.insert((current, visited), sum);
 
         sum
     } else {
@@ -76,10 +115,18 @@ fn count2(
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let output_map = parse_input(input);
+    let parsed = parse_input(input);
 
-    let mut visited_map = HashMap::new();
-    let result = count2(&output_map, &mut visited_map, "svr".to_string(), 0);
+    let mut memo = HashMap::new();
+    let result = count2(
+        &parsed.outputs,
+        &mut memo,
+        parsed.svr?,
+        parsed.dac?,
+        parsed.fft?,
+        parsed.out?,
+        0,
+    );
 
     Some(result)
 }

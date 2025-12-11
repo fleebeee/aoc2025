@@ -18,9 +18,9 @@
 | [Day 7](./src/bin/07.rs) | `21.3µs` | `24.4µs` |
 | [Day 8](./src/bin/08.rs) | `12.7ms` | `12.7ms` |
 | [Day 9](./src/bin/09.rs) | `111.3µs` | `168.7ms` |
-| [Day 11](./src/bin/11.rs) | `174.3µs` | `356.3µs` |
+| [Day 11](./src/bin/11.rs) | `164.6µs` | `221.3µs` |
 
-**Total: 195.63ms**
+**Total: 195.48ms**
 <!--- benchmarking table --->
 
 ---

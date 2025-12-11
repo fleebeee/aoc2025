@@ -28,9 +28,11 @@ needless_range_loop = "allow"
 chrono = { version = "0.4.38", optional = true }
 dhat = { version = "0.3.3", optional = true }
 hashbrown = "0.16.0"
+pathfinding = "4.14.0"
 pico-args = "0.5.0"
 range-set = "0.1.0"
 rangemap = "1.7.0"
+rayon = "1.11.0"
 tinyjson = "2.5.1"
 
 # Solution dependencies

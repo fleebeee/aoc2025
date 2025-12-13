@@ -18,11 +18,11 @@
 | [Day 7](./src/bin/07.rs) | `21.3µs` | `24.4µs` |
 | [Day 8](./src/bin/08.rs) | `12.7ms` | `12.7ms` |
 | [Day 9](./src/bin/09.rs) | `111.3µs` | `168.7ms` |
-| [Day 10](./src/bin/10.rs) | `19.9ms` | `40.4ms` |
+| [Day 10](./src/bin/10.rs) | `21.1ms` | `23.6ms` |
 | [Day 11](./src/bin/11.rs) | `164.6µs` | `221.3µs` |
-| [Day 12](./src/bin/12.rs) | `182.8µs` | `-` |
+| [Day 12](./src/bin/12.rs) | `169.8µs` | `-` |
 
-**Total: 255.97ms**
+**Total: 240.35ms**
 <!--- benchmarking table --->
 
 ---

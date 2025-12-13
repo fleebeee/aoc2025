@@ -327,7 +327,7 @@ fn back_substitute(
 pub fn part_two(input: &str) -> Option<u64> {
     let machines = parse_input(input);
 
-    let result = machines.iter().filter_map(find_min_steps).sum();
+    let result = machines.par_iter().filter_map(find_min_steps).sum();
 
     Some(result)
 }

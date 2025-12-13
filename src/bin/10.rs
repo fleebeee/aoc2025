@@ -1,4 +1,3 @@
-use pathfinding::prelude::astar;
 use std::collections::VecDeque;
 
 use hashbrown::HashSet;
@@ -10,7 +9,7 @@ type Lights = Vec<bool>;
 type Buttons = Vec<Vec<usize>>;
 type Joltages = Vec<u64>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Machine {
     lights_target: Lights,
     buttons: Buttons,
@@ -102,187 +101,233 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-// fn add(container: u128, index: u128, value: u128) -> u128 {
-//     container + (value << (index * 8))
-// }
-
-fn unpack(container: u128, index: u128) -> u128 {
-    (container >> (index * 8)) & 0xFF
+#[derive(Clone)]
+struct Matrix {
+    raw: Vec<f64>,
+    width: usize,
+    height: usize,
 }
 
-fn find_shortest_joltage_sequence(machine: &Machine) -> Option<u64> {
-    let target: u128 = machine
-        .joltages_target
-        .iter()
-        .rev()
-        .fold(0, |acc, joltage| (acc << 8) | *joltage as u128);
+impl Matrix {
+    fn get(&self, i: usize, j: usize) -> f64 {
+        self.raw[self.width * i + j]
+    }
 
-    let mut frontier = Vec::new();
-    frontier.push((0, 0));
+    fn set(&mut self, i: usize, j: usize, value: f64) {
+        self.raw[self.width * i + j] = value;
+    }
 
-    let mut visited = HashSet::new();
-    visited.insert(0);
+    fn swap(&mut self, i_1: usize, i_2: usize) {
+        for j in 0..self.width {
+            (
+                self.raw[i_1 * self.width + j],
+                self.raw[i_2 * self.width + j],
+            ) = (
+                self.raw[i_2 * self.width + j],
+                self.raw[i_1 * self.width + j],
+            );
+        }
+    }
+}
 
-    let mut largest = 0;
+fn get_matrix(machine: &Machine) -> Matrix {
+    let mut raw = vec![];
+    let target = &machine.joltages_target;
 
-    while let Some((presses, joltages)) = frontier.pop() {
-        if joltages == target {
-            return Some(presses);
+    let m = target.len();
+    let n = machine.buttons.len();
+
+    for i in 0..m {
+        for j in 0..n {
+            raw.push(if machine.buttons[j].contains(&i) {
+                1f64
+            } else {
+                0f64
+            });
         }
 
-        if presses > largest {
-            // println!("Depth: {}", presses);
-            // let unpacked: Vec<u8> = (0..machine.joltages_target.len())
-            //     .map(|i| ((joltages >> (i * 8)) & 0xFF) as u8)
-            //     .collect();
-            // println!("Joltages: {:?}", unpacked);
-            largest = presses;
-        }
+        raw.push(target[i] as f64);
+    }
 
-        // For every joltage, check that it can be satisfied
-        // theoretically without overflowing something else
-        // for i in 0..machine.joltages_target.len() {
-        //     let diff = unpack(joltages, i as u128);
-        //     let matching_buttons: Vec<&Vec<usize>> = machine
-        //         .buttons
-        //         .iter()
-        //         .filter(|button| button.contains(&i))
-        //         .collect();
+    Matrix {
+        raw,
+        width: n + 1,
+        height: m,
+    }
+}
 
-        //     let overflows: Vec<Vec<usize>> = matching_buttons
-        //         .iter()
-        //         .map(|button| {
-        //             let mut theoretical_joltages = joltages;
-        //             for i in *button {
-        //                 theoretical_joltages = add(theoretical_joltages, *i as u128, diff);
-        //             }
-        //             let overflows: Vec<_> = machine
-        //                 .joltages_target
-        //                 .iter()
-        //                 .enumerate()
-        //                 .filter(|(i, joltage)| unpack(joltages, *i as u128) > **joltage as u128)
-        //                 .map(|(i, _)| i)
-        //                 .collect();
+fn find_min_steps(machine: &Machine) -> Option<u64> {
+    let mut matrix = get_matrix(machine);
+    let m = matrix.height;
+    let n = matrix.width;
 
-        //             overflows
-        //         })
-        //         .collect();
+    // Use Gauss elimination for the matrix
 
-        //     for i in 0..machine.joltages_target.len() {
-        //         if overflows.iter().any(|overflow| overflow.contains(&i)) {
-        //             continue 'outer2;
-        //         }
-        //     }
-        // }
+    // Example:
+    // Original
+    // 1    1    1    0   10
+    // 1    1    0    1   11
+    // 1    1    0    1   11
+    // 1    0    1    0    5
+    // 1    1    1    0   10
+    // 0    1    0    0    5
 
-        // dbg!(&machine.buttons);
+    // Gaussed
+    // 1    1    1    0   10
+    // 0    1    0    0    5
+    // 0    0    1   -1   -1
+    // 0    0    0    0    0
+    // 0    0    0    0    0
+    // 0    0    0    0    0
 
-        'outer: for button in machine.buttons.iter().rev() {
-            let mut next = joltages;
-            for i in button {
-                next += 1 << (i * 8);
+    let mut h = 0;
+    let mut k = 0;
 
-                if unpack(next, *i as u128) > unpack(target, *i as u128) {
-                    continue 'outer;
+    while h < m && k < n - 1 {
+        let i_max = (h..m)
+            .max_by(|a, b| {
+                matrix
+                    .get(*a, k)
+                    .abs()
+                    .partial_cmp(&matrix.get(*b, k).abs())
+                    .unwrap()
+            })
+            .unwrap();
+
+        if matrix.get(i_max, k).abs() < 1e-10 {
+            k += 1;
+        } else {
+            matrix.swap(h, i_max);
+
+            // Normalize pivot row
+            let pivot = matrix.get(h, k);
+            for j in k..n {
+                matrix.set(h, j, matrix.get(h, j) / pivot);
+            }
+            // Force pivot to exactly 1.0
+            matrix.set(h, k, 1.0);
+
+            for i in h + 1..m {
+                let f = matrix.get(i, k);
+                matrix.set(i, k, 0.0);
+                for j in k + 1..n {
+                    matrix.set(i, j, matrix.get(i, j) - matrix.get(h, j) * f);
                 }
             }
 
-            if visited.insert(next) {
-                frontier.push((presses + 1, next));
+            h += 1;
+            k += 1;
+        }
+    }
+
+    // Back substitution
+    // Keep in mind constraints:
+    // 1. We can't have negative button presses (n >= 0)
+    // 2. n must be an integer
+
+    let mut pivots = vec![];
+    for i in 0..m {
+        for j in 0..n - 1 {
+            let val = matrix.get(i, j);
+            if val.abs() < 1e-10 {
+                continue;
+            } else {
+                pivots.push(j);
+                break;
             }
         }
     }
 
-    None
+    let free_variables: Vec<usize> = (0..n - 1).filter(|j| !pivots.contains(j)).collect();
+
+    let mut solution = vec![0.0; n - 1];
+    let mut least = None;
+
+    back_substitute(
+        machine,
+        &matrix,
+        &mut solution,
+        0,
+        &pivots,
+        &free_variables,
+        &mut least,
+    );
+
+    least.map(|v| v as u64)
 }
 
-#[allow(dead_code)]
-fn find_shortest_joltage_sequence2(machine: &Machine) -> u64 {
-    let mut frontier = Vec::new();
-    frontier.push((0, 0, vec![0; machine.joltages_target.len()]));
+fn back_substitute(
+    machine: &Machine,
+    matrix: &Matrix,
+    solution: &mut Vec<f64>,
+    nth_free: usize,
+    pivots: &[usize],
+    free_variables: &[usize],
+    least: &mut Option<usize>,
+) {
+    let n = matrix.width;
 
-    let mut lowest = u64::MAX;
-
-    while let Some((presses, index, joltage)) = frontier.pop() {
-        if joltage == machine.joltages_target && presses < lowest {
-            println!("Lowest: {presses}");
-            lowest = presses;
+    // Guesses for free variables are in, try to work
+    // out the variables
+    if nth_free == free_variables.len() {
+        // Fill in free variables first
+        let mut presses = 0;
+        for j in free_variables {
+            presses += solution[*j] as usize;
         }
 
-        if index == machine.buttons.len() {
-            // println!("Hit the end, presses: {presses}");
-            continue;
+        // Start working through pivots from bottom to top
+        for r in (0..pivots.len()).rev() {
+            let j_p = pivots[r];
+            let mut target = matrix.get(r, n - 1);
+            for j in j_p + 1..n - 1 {
+                target -= matrix.get(r, j) * solution[j];
+            }
+
+            let rounded = target.round();
+
+            // Reject non-integers and negative numbers
+            if (target - rounded).abs() > 1e-4 || rounded < -1e-10 {
+                return;
+            }
+
+            solution[j_p] = rounded;
+            presses += rounded as usize;
         }
 
-        let n_max = machine.buttons[index]
+        if least.is_none() || presses < least.unwrap() {
+            *least = Some(presses);
+        }
+    } else {
+        let j = free_variables[nth_free];
+
+        // A button can be pressed at most as many times
+        // as the smallest joltage target it has an effect towards
+        let max = machine.buttons[j]
             .iter()
-            .map(|i| machine.joltages_target[*i] - joltage[*i])
+            .map(|&i| machine.joltages_target[i])
             .min()
             .unwrap();
 
-        // println!(
-        //     "Can apply button {:?} at most {n_max} times",
-        //     machine.buttons[index],
-        // );
-
-        for n in 0..=n_max {
-            let mut next = joltage.clone();
-            machine.buttons[index].iter().for_each(|i| next[*i] += n);
-
-            // println!("Adding {:?}", &next);
-            frontier.push((presses + n, index + 1, next));
+        for guess in 0..=max {
+            solution[j] = guess as f64;
+            back_substitute(
+                machine,
+                matrix,
+                solution,
+                nth_free + 1,
+                pivots,
+                free_variables,
+                least,
+            );
         }
     }
-
-    lowest
-}
-
-#[allow(dead_code)]
-fn find_shortest_joltage_sequence3(machine: &Machine) -> u64 {
-    let target = &machine.joltages_target;
-    let result = astar(
-        &vec![0u64; target.len()],
-        |joltage: &Vec<u64>| {
-            machine
-                .buttons
-                .iter()
-                .filter_map(|button| {
-                    let mut next = joltage.clone();
-                    for i in button {
-                        next[*i] += 1;
-                        if next[*i] > target[*i] {
-                            return None;
-                        }
-                    }
-
-                    Some((next, 1))
-                })
-                .collect::<Vec<_>>()
-        },
-        |joltage: &Vec<u64>| {
-            (0..target.len())
-                .map(|i| target[i] - joltage[i])
-                .max()
-                .unwrap()
-        },
-        |joltage| joltage == target,
-    )
-    .unwrap();
-
-    result.1
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let machines = parse_input(input);
 
-    let result = machines
-        .iter()
-        .enumerate()
-        .map(|(i, machine)| {
-            println!("Machine {}", i + 1);
-            find_shortest_joltage_sequence(machine).unwrap()
-        })
-        .sum::<u64>();
+    let result = machines.iter().filter_map(find_min_steps).sum();
 
     Some(result)
 }
